@@ -37,6 +37,7 @@ import FindYourDoctor from '../../screens/consultant/FindYourDoctor';
 import MakeAppointment from '../../screens/consultant/MakeAppointment';
 import ConfirmAppointment from '../../screens/consultant/ConfirmAppointment';
 import TargetUpdate from '../../screens/DashBoard/TargetUpdate';
+import ChatScreen from '../../screens/chat/ChatScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -88,6 +89,7 @@ function DashboardStack() {
         component={ConsultationResult}
       />
       <Stack.Screen name={SCREENS.FINDYOURDOCTOR} component={FindYourDoctor} />
+      <Stack.Screen name={SCREENS.CHATSCREEN} component={ChatScreen} />
       <Stack.Screen
         name={SCREENS.MAKEAPPOINTMENT}
         component={MakeAppointment}

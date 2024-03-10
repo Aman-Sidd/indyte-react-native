@@ -8,8 +8,11 @@ import {
   ScrollView,
   Dimensions,
   Pressable,
+  PermissionsAndroid,
+  Platform,
+  Alert,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import TextCenterHeader from '../header/TextCenterHeader';
 import Back from '../../../assets/icons/BackLeft.svg';
 import Notification from '../../../assets/icons/Notification.svg';
@@ -26,8 +29,21 @@ import SolidContainer from '../../components/container/SolidContainer';
 import TextMedium from '../../components/Text/TextMedium';
 import PrimaryButton from '../../components/Button/PrimaryButton';
 import AllDoctorsCard from '../../components/consultant/AllDoctorsCard';
-import {getDieticians} from '../../services';
+import {getDieticians, getProfileDetails} from '../../services';
 import {ActivityIndicator} from 'react-native-paper';
+import {
+  CometChatCallButtons,
+  CometChatConversationsWithMessages,
+  CometChatIncomingCall,
+  CometChatUIEventHandler,
+  CometChatUIKit,
+} from '@cometchat/chat-uikit-react-native';
+import {useDispatch, useSelector} from 'react-redux';
+
+import {CometChat} from '@cometchat/chat-sdk-react-native';
+import {getUser} from '../../backend/utilFunctions';
+import {GlobalContext} from '../../../App';
+import {setCallReceived} from '../../store/chatSlice';
 const {width, height} = Dimensions.get('window');
 
 export default function FindYourDoctor({navigation}) {
@@ -55,28 +71,168 @@ export default function FindYourDoctor({navigation}) {
   ];
   const [dieticians, setDieticians] = useState([]);
   const [loading, setLoading] = useState(false);
+  // const [callRecevied, setCallReceived] = useState(false);
+  const callRecevied = useSelector(state => state.chat.callReceived);
+  const dispatch = useDispatch();
+  const [user, setUser] = useState(null);
+  const incomingCall = useRef(null);
+  var listnerID = 'UNIQUE_LISTENER_ID';
+
   useEffect(() => {
     const fetchDieticians = async () => {
       try {
         setLoading(true);
         const response = await getDieticians();
         setDieticians(response.data.dieticians);
-        console.log('RESPONSE: ', response.data);
+        // console.log('RESPONSE: ', response.data);
       } catch (err) {
         console.log('Error fetching dieticians: ', err);
       } finally {
         setLoading(false);
       }
     };
+    // let userDetails = null;
+    const fetchUser = async () => {
+      try {
+        const response = await getProfileDetails();
+        // console.log('USER:', response.data.user);
+        setUser(response.data.user);
+        const user = response.data.user;
+        const user_id = user.id;
+        let cometUser = new CometChat.User(user.id);
+        cometUser.setName(user.name);
+        // console.log('USER:', user);
+
+        // CometChatUIKit.createUser(cometUser).then(
+        //   user => {
+        //     // Alert.alert('Successful', 'User has been created!');
+        //   },
+        //   error => {
+        //     // Alert.alert('Error', 'Something went wrong!');
+        //     console.log('error', error);
+        //   },
+        // );
+
+        CometChatUIKit.getLoggedInUser().then(
+          user => {
+            if (!user) {
+              let uid = user_id;
+
+              CometChatUIKit.login({uid: uid})
+                .then(user => {
+                  Alert.alert('Successful', 'You are logged in successfully!');
+                  console.log('User logged in successfully ', user.getName());
+                })
+                .catch(error => {
+                  Alert.alert('Error', 'Something went wrong!');
+
+                  console.log('Login failed with exception:', error);
+                });
+            } else {
+              Alert.alert('User Already Exist', 'User already exist');
+            }
+          },
+          error => {
+            console.log('Some Error Occured', {error});
+          },
+        );
+
+        return response;
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    let uikitSettings = {
+      appId: '254245a92a6cb1bc', // Your appId goes here -->,
+      authKey: 'c3a9f25a9e665c3d68ae21e38477b2a3da895405', // your app authKey goes here -->,
+      region: 'in', // App region goes here -->,
+    };
+
+    CometChatUIKit.init(uikitSettings)
+      .then(() => {
+        console.log('CometChatUiKit successfully initialized');
+      })
+      .catch(error => {
+        console.log('Initialization failed with exception:', error);
+      });
+
+    fetchUser();
     fetchDieticians();
+
+    getPermissions();
+
+    CometChat.addCallListener(
+      listnerID,
+      new CometChat.CallListener({
+        onIncomingCallReceived: call => {
+          incomingCall.current = call;
+          console.log('incoming call with session ID:', call);
+          // setCallReceived(true);
+          dispatch(setCallReceived(true));
+        },
+        onOutgoingCallRejected: call => {
+          incomingCall.current = null;
+          // setCallReceived(false);
+          dispatch(setCallReceived(false));
+        },
+        onIncomingCallCancelled: call => {
+          incomingCall.current = null;
+          // setCallReceived(false);
+          dispatch(setCallReceived(false));
+        },
+      }),
+    );
+
+    CometChatUIEventHandler.addCallListener(listnerID, {
+      ccCallEnded: () => {
+        incomingCall.current = null;
+        // setCallReceived(false);
+        dispatch(setCallReceived(false));
+      },
+    });
+    return () => {
+      CometChatUIEventHandler.removeCallListener(listnerID);
+      CometChat.removeCallListener(listnerID);
+    };
   }, []);
 
-  const handleSelectDietician = id => {};
+  const getPermissions = () => {
+    if (Platform.OS == 'android') {
+      PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      ]);
+    }
+  };
+
+  const handleSelectDietician = async id => {
+    console.log('clicked...');
+    const _id = '123';
+    navigation.navigate('CHATSCREEN', {_id});
+  };
 
   return loading ? (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <ActivityIndicator size="large" color="#0000ff" />
     </View>
+  ) : callRecevied ? (
+    <CometChatIncomingCall
+      call={incomingCall.current}
+      onDecline={call => {
+        dispatch(setCallReceived(false));
+      }}
+      incomingCallStyle={{
+        backgroundColor: 'white',
+        titleColor: 'black',
+        subtitleColor: 'gray',
+        titleFont: {
+          fontSize: 20,
+          fontWeight: 'bold',
+        },
+      }}
+    />
   ) : (
     <ScreenContainer scroll>
       <TextCenterHeader

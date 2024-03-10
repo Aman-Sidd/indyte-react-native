@@ -3,6 +3,7 @@ import React from 'react'
 import { FONTS } from '../../constants/Fonts'
 
 export default function DoctorCard({ name, designation, rating, experience, imagePath }) {
+
     return (
         <View style={{ marginRight:10, backgroundColor: "#ECF2FF", width: 230, height: 360, justifyContent: "center", alignItems: "center", borderRadius: 20 }}>
             <Image style={{ width: 200, height: 300, position: 'relative', borderRadius: 20 }} source={imagePath} />
