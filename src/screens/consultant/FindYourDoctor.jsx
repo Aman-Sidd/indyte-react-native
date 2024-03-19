@@ -94,13 +94,14 @@ export default function FindYourDoctor({navigation}) {
     // let userDetails = null;
     const fetchUser = async () => {
       try {
+        setLoading(true);
         const response = await getProfileDetails();
-        // console.log('USER:', response.data.user);
+        console.log('USER:', response.data.user);
         setUser(response.data.user);
         const user = response.data.user;
         const user_id = user.id;
-        let cometUser = new CometChat.User(user.id);
-        cometUser.setName(user.name);
+        // let cometUser = new CometChat.User('456');
+        // cometUser.setName(user.name);
         // console.log('USER:', user);
 
         // CometChatUIKit.createUser(cometUser).then(
@@ -116,12 +117,13 @@ export default function FindYourDoctor({navigation}) {
         CometChatUIKit.getLoggedInUser().then(
           user => {
             if (!user) {
-              let uid = user_id;
+              // let uid = user_id;
+              let uid = '456';
 
               CometChatUIKit.login({uid: uid})
                 .then(user => {
                   Alert.alert('Successful', 'You are logged in successfully!');
-                  console.log('User logged in successfully ', user.getName());
+                  console.log('User logged in successfully ', user.get());
                 })
                 .catch(error => {
                   Alert.alert('Error', 'Something went wrong!');
@@ -129,7 +131,10 @@ export default function FindYourDoctor({navigation}) {
                   console.log('Login failed with exception:', error);
                 });
             } else {
-              Alert.alert('User Already Exist', 'User already exist');
+              Alert.alert(
+                'User Already Exist',
+                `User already exist with name: ${user.getUid()}`,
+              );
             }
           },
           error => {
@@ -140,7 +145,22 @@ export default function FindYourDoctor({navigation}) {
         return response;
       } catch (err) {
         console.log(err);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    const logoutUser = async () => {
+      CometChatUIKit.logout().then(
+        () => {
+          Alert.alert('Logout Successfull');
+          console.log('Logout completed successfully');
+        },
+        error => {
+          Alert.alert('Logout failed');
+          console.log('Logout failed with exception:', {error});
+        },
+      );
     };
     let uikitSettings = {
       appId: '254245a92a6cb1bc', // Your appId goes here -->,
@@ -156,10 +176,10 @@ export default function FindYourDoctor({navigation}) {
         console.log('Initialization failed with exception:', error);
       });
 
-    fetchUser();
-    fetchDieticians();
-
     getPermissions();
+    fetchUser();
+    // logoutUser();
+    fetchDieticians();
 
     CometChat.addCallListener(
       listnerID,
@@ -209,7 +229,7 @@ export default function FindYourDoctor({navigation}) {
 
   const handleSelectDietician = async id => {
     console.log('clicked...');
-    const _id = '123';
+    const _id = '65ec65f80094789912038667';
     navigation.navigate('CHATSCREEN', {_id});
   };
 
@@ -270,7 +290,7 @@ export default function FindYourDoctor({navigation}) {
               fontFamily: FONTS.FONT_POPPINS_REGULAR,
               color: '#343965',
             }}
-            placeholder="Search a doctor"
+            placeholder="Search a dietician"
           />
           <Image
             source={require('../../../assets/images/search.png')}
@@ -285,7 +305,7 @@ export default function FindYourDoctor({navigation}) {
         </View>
         <Image source={require('../../../assets/images/setting.png')} />
       </View>
-      <View
+      {/* <View
         style={{
           marginVertical: 20,
           flexDirection: 'row',
@@ -308,8 +328,8 @@ export default function FindYourDoctor({navigation}) {
           }}>
           See all
         </Text>
-      </View>
-      <View style={{flex: 1, padding: 5}}>
+      </View> */}
+      {/* <View style={{flex: 1, padding: 5}}>
         <ConsultantResultCard
           name={'Dr. Samantha'}
           designation={'Cardiologist'}
@@ -324,8 +344,8 @@ export default function FindYourDoctor({navigation}) {
           }}
           mapImgStyle={{width: width / 3.5, height: 70}}
         />
-      </View>
-      <View style={{marginTop: 30}}>
+      </View> */}
+      {/* <View style={{marginTop: 30}}>
         <ScrollView horizontal>
           {DESIGNATOINS.map(item => (
             <View
@@ -371,8 +391,8 @@ export default function FindYourDoctor({navigation}) {
             </View>
           ))}
         </ScrollView>
-      </View>
-      <View style={{marginTop: 10}}>
+      </View> */}
+      {/* <View style={{marginTop: 10}}>
         <Text
           style={{
             fontSize: 22,
@@ -381,39 +401,14 @@ export default function FindYourDoctor({navigation}) {
           }}>
           Nearby Doctors
         </Text>
-        {/* <ScrollView scroll horizontal style={{flexDirection: 'row'}}>
-          <DoctorCard
-            name={'Dr. Samantha'}
-            designation={'Cardiologist'}
-            rating={'4.9'}
-            experience={'8'}
-            imagePath={require('../../../assets/images/fulldoctor1.png')}
-          />
-          <DoctorCard
-            name={'Dr. Daniel'}
-            designation={'Dermatologist'}
-            rating={'4.85'}
-            experience={'10'}
-            imagePath={require('../../../assets/images/doctor2.png')}
-          />
-          <DoctorCard
-            name={'Dr. Samantha'}
-            designation={'Cardiologist'}
-            rating={'4.9'}
-            experience={'8'}
-            imagePath={require('../../../assets/images/fulldoctor1.png')}
-          />
-          <DoctorCard
-            name={'Dr. Samantha'}
-            designation={'Cardiologist'}
-            rating={'4.9'}
-            experience={'8'}
-            imagePath={require('../../../assets/images/doctor2.png')}
-          />
-        </ScrollView> */}
+        
         <ScrollView horizontal style={{flexDirection: 'row'}}>
           {dieticians.map((item, index) => (
-            <Pressable onPress={() => handleSelectDietician(item.id)}>
+            <Pressable
+              onPress={() => {
+                console.log("Pressed Dietician's ID:", item.id);
+                handleSelectDietician(item.id);
+              }}>
               <DoctorCard
                 key={index}
                 name={item.username}
@@ -425,8 +420,8 @@ export default function FindYourDoctor({navigation}) {
             </Pressable>
           ))}
         </ScrollView>
-      </View>
-      <SolidContainer containerStyle={styles.solidcontainer}>
+      </View> */}
+      {/* <SolidContainer containerStyle={styles.solidcontainer}>
         <TextMedium style={{fontSize: 15}}>Appointment history</TextMedium>
         <PrimaryButton
           containerStyle={styles.targetButton}
@@ -434,17 +429,51 @@ export default function FindYourDoctor({navigation}) {
           title={'Check'}
           onPress={() => navigation.navigate(SCREENS.APPOINTMENTHISTORY)}
         />
-      </SolidContainer>
+      </SolidContainer> */}
       <View style={{marginBottom: 40}}>
         <Text
           style={{
             fontSize: 22,
             fontFamily: FONTS.FONT_POPPINS_BOLD,
             color: '#343965',
+            marginTop: 10,
           }}>
-          Nearby Doctors
+          Available Dieticians
         </Text>
-        <View
+        <ScrollView style={{flexDirection: 'column'}}>
+          {dieticians.map((item, index) => (
+            <Pressable
+              onPress={() => {
+                console.log("Pressed Dietician's ID:", item.id);
+                handleSelectDietician(item.id);
+              }}>
+              {/* <DoctorCard
+                key={index}
+                name={item.username}
+                designation={'Cardiologist'}
+                rating={'4.9'}
+                experience={'8'}
+                imagePath={require('../../../assets/images/fulldoctor1.png')}
+              /> */}
+              <View
+                style={{
+                  backgroundColor: '#ECF2FF',
+                  padding: 5,
+                  paddingHorizontal: 8,
+                  borderRadius: 30,
+                  marginVertical: 10,
+                }}>
+                <AllDoctorsCard
+                  name={item.username}
+                  // designation={'Cardiologist'}
+                  rating={'4.9'}
+                  profilePath={require('../../../assets/images/all-doctor1.png')}
+                />
+              </View>
+            </Pressable>
+          ))}
+        </ScrollView>
+        {/* <View
           style={{
             backgroundColor: '#ECF2FF',
             padding: 5,
@@ -503,7 +532,7 @@ export default function FindYourDoctor({navigation}) {
             rating={'4.9'}
             profilePath={require('../../../assets/images/all-doctor1.png')}
           />
-        </View>
+        </View> */}
       </View>
     </ScreenContainer>
   );

@@ -5,6 +5,7 @@ import {
   Text,
   View,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import React, {useContext, useEffect, useState} from 'react';
 import Header from '../../components/header/Header';
@@ -34,6 +35,8 @@ import {useDispatch, useSelector} from 'react-redux';
 import Account from '../profile/Account';
 import {userSlice} from '../../store/userSlice';
 import {getProfileDetails} from '../../services';
+import SolidContainer from '../../components/container/SolidContainer';
+import TextMedium from '../../components/Text/TextMedium';
 const Avatar = require('../../../assets/images/Avatar.png');
 const Profile = () => {
   const navigation = useNavigation();
@@ -70,6 +73,11 @@ const Profile = () => {
     setLoading(false);
   }
 
+  const handleChatWithDietician = id => {
+    console.log('clicked...');
+    const _id = '65ec65f80094789912038667';
+    navigation.navigate('CHATSCREEN', {_id});
+  };
   useEffect(() => {
     getProfile();
   }, []);
@@ -146,7 +154,60 @@ const Profile = () => {
             Title={'Appointment History'}
           />
         </View>
-        <View style={{marginLeft: '9%', marginRight: 5, marginTop: '10%'}}>
+
+        <View style={{marginVertical: 20, gap: 8}}>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              // backgroundColor: 'blue',
+              marginHorizontal: 20,
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: 5,
+            }}>
+            <View style={{flexDirection: 'row'}}>
+              <Image
+                style={{
+                  height: 50,
+                  width: 50,
+                  resizeMode: 'contain',
+                  borderRadius: 25,
+                }}
+                source={require('../../../assets/images/all-doctor1.png')}
+              />
+              <View style={{marginHorizontal: 10}}>
+                <Text style={{fontSize: 20, fontWeight: '500'}}>Gracie</Text>
+                <Text>Dietitian</Text>
+              </View>
+            </View>
+            <PrimaryButton
+              onPress={() => {}}
+              title={'Assigned'}
+              containerStyle={{
+                height: 30,
+                paddingHorizontal: 7,
+                dispaly: 'flex',
+                alignItems: 'center',
+              }}
+              textStyle={{fontFamily: 'System', fontSize: 14}}
+            />
+          </View>
+          <View
+            style={{
+              backgroundColor: 'white',
+              height: 60,
+              marginHorizontal: 20,
+              borderRadius: 20,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <Text style={{color: '#97B5FE', fontSize: 15}}>
+              Chat with dietician
+            </Text>
+          </View>
+        </View>
+        <View style={{marginLeft: '9%', marginRight: 5, marginTop: '6%'}}>
           <TextH4 style={{marginVertical: 10}}>Notification</TextH4>
           <ProfileOption
             leftIcon={<PopUp width={20} height={20} />}
@@ -189,6 +250,6 @@ export default Profile;
 const styles = StyleSheet.create({
   Container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#f5f5f5',
   },
 });
